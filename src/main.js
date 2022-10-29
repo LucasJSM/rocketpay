@@ -71,54 +71,86 @@ const cardNumberPattern = {
 }
 const cardNumberMasked = IMask(cardNumberField, cardNumberPattern)
 
-document.querySelector("#add-card").addEventListener("click", () => {
-  alert("Cartão adicionado")
+const cardHolder = document.querySelector("#card-holder")
+cardHolder.addEventListener("input", () => {
+  const ccHolderClass = ".cc-holder .value"
+  const defaultName = "FULANO DA SILVA"
+
+  updateField(ccHolderClass, defaultName, cardHolder.value)
 })
+
+securityCodeMasked.on("accept", () => {
+  const ccSecurityClass = ".cc-security .value"
+  const defaultSecurityCode = "123"
+
+  updateField(ccSecurityClass, defaultSecurityCode, securityCodeMasked.value)
+})
+
+cardNumberMasked.on("accept", () => {
+  const cardType = cardNumberMasked.masked.currentMask.cardType
+  setCardType(cardType)
+
+  const ccNumberClass = ".cc-number"
+  const defaultCardNumber = "1234 5678 9012 3456"
+
+  updateField(ccNumberClass, defaultCardNumber, cardNumberMasked.value)
+})
+
+expirationDateMasked.on("accept", () => {
+  const ccExpDateClass = ".cc-expiration .value"
+  const defaultExpDate = "02/32"
+
+  updateField(ccExpDateClass, defaultExpDate, expirationDateMasked.value)
+})
+
+const updateField = (ccSelector, defaultLabel, element) => {
+  const ccElement = document.querySelector(ccSelector)
+
+  ccElement.innerText = element.length === 0 ? defaultLabel : element
+}
 
 document
   .querySelector("form")
   .addEventListener("submit", (event) => event.preventDefault())
 
-const cardHolder = document.querySelector("#card-holder")
-cardHolder.addEventListener("input", () => {
-  updateCardHolder(cardHolder)
-})
+const verifyInputs = () => {
+  if (
+    !cardHolder.value ||
+    !cardNumberMasked.value ||
+    !expirationDateMasked.value ||
+    !securityCodeMasked.value
+  ) {
+    return 1
+  }
 
-const updateCardHolder = (cardHolder) => {
-  const ccHolder = document.querySelector(".cc-holder .value")
-
-  ccHolder.innerText =
-    cardHolder.value.length === 0 ? "FULANO DA SILVA" : cardHolder.value
+  return 0
 }
 
-securityCodeMasked.on("accept", () => {
-  updateSecurityCode(securityCodeMasked.value)
-})
+const verifyCardNumber = (cardType) => {
+  if (cardType === "default") {
+    return 1
+  }
 
-const updateSecurityCode = (code) => {
-  const ccSecurity = document.querySelector(".cc-security .value")
-
-  ccSecurity.innerText = code.length === 0 ? "123" : code
+  return 0
 }
 
-cardNumberMasked.on("accept", () => {
+const addCard = document.querySelector("#add-card")
+addCard.addEventListener("click", () => {
+  const hasEmptyInput = verifyInputs()
+
+  if (hasEmptyInput) {
+    alert("Campos vazios")
+
+    return
+  }
+
   const cardType = cardNumberMasked.masked.currentMask.cardType
-  setCardType(cardType)
-  updateCardNumber(cardNumberMasked.value)
+  const cardTypeIsDefault = verifyCardNumber(cardType)
+  if (cardTypeIsDefault) {
+    alert("Número do cartão inválido")
+
+    return
+  }
+
+  alert("Cartão adicionado")
 })
-
-const updateCardNumber = (number) => {
-  const ccNumber = document.querySelector(".cc-number")
-
-  ccNumber.innerText = number.length === 0 ? "1234 5678 9012 3456" : number
-}
-
-expirationDateMasked.on("accept", () => {
-  updateExpirationDate(expirationDateMasked.value)
-})
-
-const updateExpirationDate = (date) => {
-  const ccExpiration = document.querySelector(".cc-expiration .value")
-
-  ccExpiration.innerText = date.length === 0 ? "02/32" : date
-}
